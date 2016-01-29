@@ -83,6 +83,7 @@ import (
 	"github.com/kevinawalsh/profiling"
 	"github.com/kevinawalsh/taoca"
 	"github.com/kevinawalsh/taoca/netlog"
+	"github.com/kevinawalsh/taoca/policy"
 	"github.com/kevinawalsh/taoca/rendezvous"
 )
 
@@ -130,7 +131,7 @@ var caSubsidiaryName = &pkix.Name{
 }
 
 var manualMode bool
-var policy tao.Guard
+var guard tao.Guard
 
 var learnMode bool
 var knownHashes = make(map[string]bool)
@@ -369,27 +370,27 @@ func doResponse(conn *tao.Conn) bool {
 				if !knownHashes[prinHash] {
 					fmt.Printf("Learned: %s\n", prinHash)
 					knownHashes[prinHash] = true
-					if err := policy.AddRule(prinHash); err != nil {
+					if err := guard.AddRule(prinHash); err != nil {
 						fmt.Println("Error adding rule: %s\n", err)
 					}
 				}
 			}
 		}
 
-		if !policy.IsAuthorized(*conn.Peer(), "ClaimCertificate", []string{*name.OrganizationalUnit, *name.CommonName}) &&
-			!policy.IsAuthorized(*conn.Peer(), "ClaimCertificate", nil) {
+		if !guard.IsAuthorized(*conn.Peer(), "ClaimCertificate", []string{*name.OrganizationalUnit, *name.CommonName}) &&
+			!guard.IsAuthorized(*conn.Peer(), "ClaimCertificate", nil) {
 			fmt.Printf("Policy (as follows) does not allow this request\n")
-			fmt.Printf("%s\n", policy.String())
+			fmt.Printf("%s\n", guard.String())
 			doError(conn, nil, taoca.ResponseStatus_TAOCA_REQUEST_DENIED, "request is denied")
 			return false
 		}
 
-		if _, ok := policy.(*tao.ACLGuard); ok {
+		if _, ok := guard.(*tao.ACLGuard); ok {
 			cps = cpsTemplate + cpsACL
 		} else {
 			cps = cpsTemplate + cpsDatalog
 		}
-		cps += "\n" + policy.String()
+		cps += "\n" + guard.String()
 	}
 	T.Sample("authenticated") // 6
 
@@ -545,7 +546,7 @@ func main() {
 			} else {
 				fmt.Printf("Creating default certificate-granting policy: %s\n", ppath)
 				fmt.Printf("Edit that file to define the certificate-granting policy.\n")
-				err := util.WritePath(ppath, []byte(defPolicy), 0755, 0755)
+				err := util.WritePath(ppath, []byte(policy.Default), 0755, 0755)
 				options.FailIf(err, "Can't save policy rules")
 			}
 		}
@@ -564,7 +565,7 @@ func main() {
 	netlog.Log("https_ca: manual? %v", manualMode)
 
 	if !manualMode {
-		policy, err = LoadPolicy(ppath)
+		guard, err = policy.Load(ppath)
 		options.FailIf(err, "Can't load certificate-granting policy")
 	}
 

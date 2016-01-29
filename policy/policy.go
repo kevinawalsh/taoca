@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package policy
 
 import (
 	"fmt"
@@ -20,7 +20,7 @@ import (
 	"github.com/jlmucb/cloudproxy/go/tao"
 )
 
-func LoadPolicy(path string) (tao.Guard, error) {
+func Load(path string) (tao.Guard, error) {
 	s, err := NewScanner(path)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func LoadPolicy(path string) (tao.Guard, error) {
 	return g, nil
 }
 
-var defPolicy = `# This file defines the certificate-granting policy for some instance of a
+var Default = `# This file defines the certificate-granting policy for some instance of a
 # Cloudproxy HTTPS Certificate Authority. The format is as follows:
 # 
 # * Comment lines and blank lines are ignored. 
