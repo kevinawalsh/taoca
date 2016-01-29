@@ -1,0 +1,66 @@
+// Copyright (c) 2015, Kevin Walsh.  All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// To compile this file, run:
+//   protoc --go_out=. *.proto
+syntax = "proto2";
+
+package taoca;
+
+message X509Details {
+  optional string common_name = 1;
+  optional string country = 2;
+  optional string state = 3;
+  optional string city = 4;
+  optional string organization = 5;
+  optional string organizational_unit = 6;
+  optional int32 serial_number = 7;
+}
+
+message CSR {
+    // Public key for the certificate being requested, as a serialized
+    // tao.CryptoKey.
+    required bytes public_key = 1;
+
+    // Subject name details for the certificate being requested.
+    required X509Details name = 2;
+
+    // Requested duration for the certificate being requested.
+    required int32 years = 3;
+
+    // Whether the certificate being requested should have the IsCA flag set.
+    required bool is_ca = 4;
+}
+
+message Request {
+    required CSR CSR = 1;
+}
+
+enum ResponseStatus {
+    TAOCA_OK = 0; 
+    TAOCA_BAD_REQUEST = 1; 
+    TAOCA_REQUEST_DENIED = 2; 
+    TAOCA_ERROR = 3; 
+}
+
+message Cert {
+    optional bytes x509_cert = 1;
+}
+
+message Response {
+    required ResponseStatus status = 1;
+    optional string error_detail = 2;
+    repeated Cert cert = 3;
+}
+

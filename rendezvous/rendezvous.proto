@@ -1,0 +1,57 @@
+// Copyright (c) 2015, Kevin Walsh.  All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+syntax = "proto2";
+
+package rendezvous;
+
+enum RequestType {
+    RENDEZVOUS_REGISTER = 0; 
+    RENDEZVOUS_LOOKUP = 1; 
+    RENDEZVOUS_POLICY = 2; 
+}
+
+message Binding {
+    required string name = 1;
+    optional string host = 2;
+    optional string port = 3;
+    optional string protocol = 4;
+    optional string principal = 5;
+    optional uint64 ttl = 6;
+    optional uint64 age = 7;
+}
+
+message Request {
+    // Request type.
+    required RequestType type = 1;
+
+    // Pattern to be matched against names for RENDEZVOUS_LOOKUP.
+    optional string query = 2;
+
+    // Binding for RENDEZVOUS_REGISTER.
+    optional Binding binding = 3;
+}
+
+enum ResponseStatus {
+    RENDEZVOUS_OK = 0; 
+    RENDEZVOUS_BAD_REQUEST = 1; 
+    RENDEZVOUS_REQUEST_DENIED = 2; 
+    RENDEZVOUS_ERROR = 3; 
+}
+
+message Response {
+    required ResponseStatus status = 1;
+    optional string error_detail = 2;
+    optional string policy = 3;
+    repeated Binding bindings = 4;
+}
