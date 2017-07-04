@@ -244,7 +244,9 @@ func publish(doc []byte) (url string, err error) {
 
 func doResponseWithStats(conn *tao.Conn) {
 	op := profiling.NewOp()
+	conn.T = profiling.NewTrace(2, 1)
 	ok := doResponse(conn)
+	fmt.Println(conn.T)
 	stats.Done(&op, ok)
 }
 

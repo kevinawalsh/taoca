@@ -81,6 +81,7 @@ func doResponse(conn *tao.Conn) {
 				conn.WriteString("BAD")
 				break
 			}
+			verbose.Printf("netlog: msg is: %s\n", msg)
 			e := &netlog.LogEntry{Prin: *conn.Peer(), Msg: msg}
 			lock.Lock()
 			log = append(log, e)

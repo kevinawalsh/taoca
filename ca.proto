@@ -45,6 +45,7 @@ message CSR {
 
 message Request {
     required CSR CSR = 1;
+    optional bytes signature = 2;
 }
 
 enum ResponseStatus {
